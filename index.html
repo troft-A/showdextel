@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#09090b">
+  <title>Obsidian Tactical Calc</title>
+  <style>
+    :root {
+      --bg-void: #09090b;
+      --bg-card: #121216;
+      --bg-input: #1a1a20;
+      --border: #27272f;
+      --gold: #d4af37;
+      --gold-dim: rgba(212, 175, 55, 0.15);
+      --gold-grad: linear-gradient(135deg, #e5c158 0%, #b89225 100%);
+      --text-main: #f4f4f6;
+      --text-muted: #8e8e9a;
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 75px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(18, 18, 22, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.8px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: var(--gold-dim);
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      font-weight: 600;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      padding: 16px;
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Forms */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--gold);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--gold);
+    }
+
+    /* Toggle Pills */
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex: 1;
+      text-align: center;
+      user-select: none;
+    }
+
+    .pill.active {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* Primary Button */
+    .btn-gold {
+      width: 100%;
+      background: var(--gold-grad);
+      color: #09090b;
+      border: none;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+      transition: transform 0.1s;
+    }
+
+    .btn-gold:active {
+      transform: scale(0.98);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    /* Result Box */
+    .result-box {
+      background: #0d0d11;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .dmg-range {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 4px 0;
+    }
+
+    .dmg-pct {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .dmg-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* Shared Power Ability List */
+    .sp-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .sp-item.selected {
+      border-color: var(--gold);
+      background: var(--gold-dim);
+    }
+
+    .sp-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .sp-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sp-mult {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    /* Bottom Navigation */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(18, 18, 22, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 12px 0;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 33.33%;
+    }
+
+    .nav-btn.active {
+      color: var(--gold);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">⚡ Obsidian Calc</div>
+    <div class="status-badge">OFFLINE • LOCAL</div>
+  </header>
+
+  <main>
+    <!-- ONGLET 1 : SIMULATEUR TERA & DÉGÂTS -->
+    <section id="tab-tera" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span>Configuration Offensive</span>
+          <button class="btn-ghost" onclick="resetTera()">Reset</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Puissance (BP)</label>
+            <input type="number" id="bp" value="80" oninput="calcDamage()">
+          </div>
+          <div class="field">
+            <label>Stat Atk / SpA</label>
+            <input type="number" id="atk" value="350" oninput="calcDamage()">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Boost Atk (Cran)</label>
+            <select id="atk-stage" onchange="calcDamage()">
+              <option value="0.5">-2 (x0.5)</option>
+              <option value="0.67">-1 (x0.67)</option>
+              <option value="1" selected>0 (Neutre)</option>
+              <option value="1.5">+1 (x1.5)</option>
+              <option value="2">+2 (x2.0)</option>
+              <option value="2.5">+3 (x2.5)</option>
+              <option value="3">+4 (x3.0)</option>
+              <option value="4">+6 (x4.0)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Objet Offensif</label>
+            <select id="item-mult" onchange="calcDamage()">
+              <option value="1" selected>Aucun / Neutre</option>
+              <option value="1.2">Boost Type (x1.2)</option>
+              <option value="1.3">Orbe Vie (x1.3)</option>
+              <option value="1.5">Bandeau / Lunettes Choix (x1.5)</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Statut STAB & Téracristallisation</label>
+        <div class="pill-group" id="stab-group">
+          <div class="pill" data-val="1" onclick="selectPill('stab-group', this)">Sans STAB (x1)</div>
+          <div class="pill active" data-val="1.5" onclick="selectPill('stab-group', this)">STAB Normal (x1.5)</div>
+          <div class="pill" data-val="2" onclick="selectPill('stab-group', this)">Tera + STAB (x2.0)</div>
+        </div>
+
+        <label>Efficacité de Type</label>
+        <div class="pill-group" id="eff-group">
+          <div class="pill" data-val="0.25" onclick="selectPill('eff-group', this)">x0.25</div>
+          <div class="pill" data-val="0.5" onclick="selectPill('eff-group', this)">x0.5</div>
+          <div class="pill active" data-val="1" onclick="selectPill('eff-group', this)">x1</div>
+          <div class="pill" data-val="2" onclick="selectPill('eff-group', this)">x2</div>
+          <div class="pill" data-val="4" onclick="selectPill('eff-group', this)">x4</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>Cible & Défense</span></div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Def / SpD Cible</label>
+            <input type="number" id="def" value="250" oninput="calcDamage()">
+          </div>
+          <div class="field">
+            <label>PV Max Cible</label>
+            <input type="number" id="hp" value="340" oninput="calcDamage()">
+          </div>
+          <div class="field">
+            <label>Boost Def</label>
+            <select id="def-stage" onchange="calcDamage()">
+              <option value="0.5">-2</option>
+              <option value="0.67">-1</option>
+              <option value="1" selected>0</option>
+              <option value="1.5">+1</option>
+              <option value="2">+2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:var(--gold); font-weight:700;">ESTIMATION (NIV. 100)</span>
+            <span id="sp-active-badge" style="font-size:10px; color:var(--text-muted);">Multiplicateur SP : x1.00</span>
+          </div>
+          <div class="dmg-range" id="dmg-out">0 - 0 PV</div>
+          <div class="dmg-pct" id="pct-out">0.0% - 0.0%</div>
+          <div class="dmg-meta" id="ko-verdict">Ajuste les stats pour voir le verdict.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONGLET 2 : STACK SHARED POWER -->
+    <section id="tab-sp" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>Stack Shared Power</span>
+          <span id="sp-total-display" style="color:var(--green);">Total : x1.00</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+          Sélectionne les talents actifs partagés par ton équipe. Le multiplicateur total s'applique automatiquement au simulateur de dégâts.
+        </p>
+
+        <div id="sp-list">
+          <div class="sp-item" data-mult="1.5" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Coloforce / Force Pure</div>
+              <div class="sp-desc">Double la statistique d'Attaque</div>
+            </div>
+            <div class="sp-mult">x2.0 Atk</div>
+          </div>
+          <div class="sp-item" data-mult="1.3" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Sans Limite (Sheer Force)</div>
+              <div class="sp-desc">Attaques à effets secondaires +30%</div>
+            </div>
+            <div class="sp-mult">x1.30</div>
+          </div>
+          <div class="sp-item" data-mult="1.3" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Griffe Dure (Tough Claws)</div>
+              <div class="sp-desc">Attaques de contact +30%</div>
+            </div>
+            <div class="sp-mult">x1.30</div>
+          </div>
+          <div class="sp-item" data-mult="1.5" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Technicien</div>
+              <div class="sp-desc">Capacités ≤ 60 BP +50%</div>
+            </div>
+            <div class="sp-mult">x1.50</div>
+          </div>
+          <div class="sp-item" data-mult="1.33" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Orichalque / Hadron / Ruin</div>
+              <div class="sp-desc">Boost météo/terrain ou baisse Def</div>
+            </div>
+            <div class="sp-mult">x1.33</div>
+          </div>
+          <div class="sp-item" data-mult="1.5" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Cran / Rage Brûlure</div>
+              <div class="sp-desc">Sous statut +50%</div>
+            </div>
+            <div class="sp-mult">x1.50</div>
+          </div>
+          <div class="sp-item" data-mult="1.2" onclick="toggleSP(this)">
+            <div>
+              <div class="sp-name">Téméraire / Poing de Fer</div>
+              <div class="sp-desc">Recul ou Poings +20%</div>
+            </div>
+            <div class="sp-mult">x1.20</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONGLET 3 : SPEED TIERS & VITESSE -->
+    <section id="tab-speed" class="tab-content">
+      <div class="card">
+        <div class="card-title"><span>Calculateur de Vitesse</span></div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Vitesse Brute (Stat)</label>
+            <input type="number" id="spd-base" value="300" oninput="calcSpeed()">
+          </div>
+          <div class="field">
+            <label>Cran Vitesse</label>
+            <select id="spd-stage" onchange="calcSpeed()">
+              <option value="0.5">-2</option>
+              <option value="0.67">-1</option>
+              <option value="1" selected>0 (Neutre)</option>
+              <option value="1.5">+1 (x1.5)</option>
+              <option value="2">+2 (x2.0)</option>
+              <option value="2.5">+3 (x2.5)</option>
+              <option value="3">+4 (x3.0)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pill-group" id="spd-mods">
+          <div class="pill" data-mult="1.5" onclick="toggleSpeedMod(this)">Mouchoir Choix (x1.5)</div>
+          <div class="pill" data-mult="2" onclick="toggleSpeedMod(this)">Vent Arrière / Météo (x2)</div>
+          <div class="pill" data-mult="0.5" onclick="toggleSpeedMod(this)">Paralysie (x0.5)</div>
+        </div>
+
+        <div class="result-box" style="text-align:center;">
+          <span style="font-size:11px; color:var(--gold); font-weight:700;">VITESSE FINALE EFFECTIVE</span>
+          <div class="dmg-range" id="spd-out" style="font-size:32px; color:var(--gold);">300</div>
+          <div class="dmg-meta" id="spd-note">Dépasse tout ce qui est strictement inférieur à 300.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- NAVIGATION BASSE -->
+  <nav>
+    <button class="nav-btn active" onclick="switchTab('tera', this)">
+      <span class="nav-icon">⚔️</span>
+      <span>Tera & Dégâts</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('sp', this)">
+      <span class="nav-icon">🧬</span>
+      <span>Shared Power</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('speed', this)">
+      <span class="nav-icon">⚡</span>
+      <span>Speed Tiers</span>
+    </button>
+  </nav>
+
+  <script>
+    let spMultiplier = 1.0;
+
+    // Navigation par onglets
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Gestion des boutons pilules (choix unique)
+    function selectPill(groupId, selectedEl) {
+      const group = document.getElementById(groupId);
+      group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      selectedEl.classList.add('active');
+      calcDamage();
+    }
+
+    // Stack Shared Power (choix multiple)
+    function toggleSP(el) {
+      el.classList.toggle('selected');
+      let total = 1.0;
+      document.querySelectorAll('#sp-list .sp-item.selected').forEach(item => {
+        total *= parseFloat(item.getAttribute('data-mult'));
+      });
+      spMultiplier = total;
+      document.getElementById('sp-total-display').innerText = `Total : x${spMultiplier.toFixed(2)}`;
+      document.getElementById('sp-active-badge').innerText = `Multiplicateur SP : x${spMultiplier.toFixed(2)}`;
+      calcDamage();
+    }
+
+    // Calcul principal des dégâts (Formule Gen 9 Niv. 100)
+    function calcDamage() {
+      const bp = parseFloat(document.getElementById('bp').value) || 0;
+      const atk = (parseFloat(document.getElementById('atk').value) || 1) * parseFloat(document.getElementById('atk-stage').value);
+      const def = (parseFloat(document.getElementById('def').value) || 1) * parseFloat(document.getElementById('def-stage').value);
+      const hp = parseFloat(document.getElementById('hp').value) || 1;
+      const itemMult = parseFloat(document.getElementById('item-mult').value);
+      
+      const stabEl = document.querySelector('#stab-group .pill.active');
+      const stab = stabEl ? parseFloat(stabEl.getAttribute('data-val')) : 1;
+      
+      const effEl = document.querySelector('#eff-group .pill.active');
+      const eff = effEl ? parseFloat(effEl.getAttribute('data-val')) : 1;
+
+      // Formule officielle approximée Niveau 100 : (((2 * 100 / 5 + 2) * BP * Atk / Def) / 50 + 2) * Modifiers
+      const baseDmg = (((42 * bp * (atk / def)) / 50) + 2);
+      const finalBase = baseDmg * stab * eff * itemMult * spMultiplier;
+
+      const minRoll = Math.floor(finalBase * 0.85);
+      const maxRoll = Math.floor(finalBase * 1.00);
+
+      const minPct = ((minRoll / hp) * 100).toFixed(1);
+      const maxPct = ((maxRoll / hp) * 100).toFixed(1);
+
+      document.getElementById('dmg-out').innerText = `${minRoll} - ${maxRoll} PV`;
+      document.getElementById('pct-out').innerText = `${minPct}% - ${maxPct}%`;
+
+      const verdictEl = document.getElementById('ko-verdict');
+      if (minRoll >= hp) {
+        verdictEl.innerHTML = `<b style="color:var(--green);">OHKO GARANTI (100% de chance)</b>`;
+      } else if (maxRoll >= hp) {
+        verdictEl.innerHTML = `<b style="color:var(--gold);">Roll favorable pour OHKO</b> (Assuré avec Piège de Roc)`;
+      } else if (minRoll * 2 >= hp) {
+        verdictEl.innerHTML = `<b style="color:var(--blue);">2HKO GARANTI</b>`;
+      } else {
+        verdictEl.innerText = `Pas de KO direct (3HKO ou plus).`;
+      }
+    }
+
+    // Calcul Vitesse
+    function toggleSpeedMod(el) {
+      el.classList.toggle('active');
+      calcSpeed();
+    }
+
+    function calcSpeed() {
+      let spd = parseFloat(document.getElementById('spd-base').value) || 0;
+      const stage = parseFloat(document.getElementById('spd-stage').value);
+      spd = spd * stage;
+
+      document.querySelectorAll('#spd-mods .pill.active').forEach(mod => {
+        spd *= parseFloat(mod.getAttribute('data-mult'));
+      });
+
+      const finalSpd = Math.floor(spd);
+      document.getElementById('spd-out').innerText = finalSpd;
+      document.getElementById('spd-note').innerText = `Tu joues avant tout Pokémon ayant ${finalSpd - 1} ou moins en vitesse.`;
+    }
+
+    function resetTera() {
+      document.getElementById('bp').value = 80;
+      document.getElementById('atk').value = 350;
+      document.getElementById('def').value = 250;
+      document.getElementById('hp').value = 340;
+      document.getElementById('atk-stage').value = "1";
+      document.getElementById('def-stage').value = "1";
+      document.getElementById('item-mult').value = "1";
+      calcDamage();
+    }
+
+    // Initialisation au démarrage
+    calcDamage();
+    calcSpeed();
+  </script>
+</body>
+</html>
